@@ -18,4 +18,24 @@ To set up the project on your machine, you can follow these steps:
 1. Set up git on your machine if not already configured.
 2. Navigate to the directory you want to set up the project. Open a terminal in that folder and clone the project using git:
    ```bash
-   git clone [https://github.com/your-username/traffic-sign-recognition.git](https://github.com/your-username/traffic-sign-recognition.git)
+   git clone [https://github.com/sma234/sign-detection.git](https://github.com/sma234/sign-detection.git)
+3. If you have VS Code installed, you can open the project from the same terminal using the following commands:
+   ```bash
+   cd sign-detection
+   code .
+4. Open the integrated VS Code terminal (via View > Terminal or by using the shortcut `Ctrl+``) and run the following commands to create a virtual environment and install dependencies:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   pip install torch torchvision opencv-python numpy pillow
+
+
+## Suggested Workflows
+
+This project is divided into three main operational workflows. Depending on your goal, you can run the following scripts:
+
+### 1. Real-Time Inference (Edge Deployment)
+To start the live camera feed and perform real-time traffic sign detection and classification, run the main script. This is the primary script meant to run on the edge device (e.g., Nvidia Jetson).
+   ```bash
+   python jetson_main.py
+
