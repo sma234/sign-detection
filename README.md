@@ -30,23 +30,6 @@ To set up the project on your machine, you can follow these steps:
    pip install torch torchvision opencv-python numpy pillow
 
 
-## Suggested Workflows
 
-This project is divided into three main operational workflows. Depending on your goal, you can run the following scripts:
-
-### 1. Real-Time Inference (Edge Deployment)
-To start the live camera feed and perform real-time traffic sign detection and classification, run the main script. This is the primary script meant to run on the edge device (e.g., Nvidia Jetson):
-   ```bash
-   python jetson_main.py
-   
-
-### 2. Model Training
-To train the SmallSignNet Convolutional Neural Network on your custom dataset, use the training script. Ensure your training images are placed inside the dataset/ directory, organized into folders named after each class.
-   ```bash 
-      python train.py
- 
-### 3. Environment Calibration
-If the lighting conditions change (e.g., moving from a room with natural light to artificial light), use the built-in HSV picker tool. This script opens the camera and allows you to click on the traffic signs to dynamically read and adjust the optimal HSV color ranges for detection.
-   ```bash
 python hsv_picker.py
 
