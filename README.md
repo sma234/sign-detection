@@ -31,5 +31,4 @@ To set up the project on your machine, you can follow these steps:
 
 
 
-python hsv_picker.py
 
