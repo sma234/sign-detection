@@ -1,34 +1,98 @@
-# Autonomous Edge AI Traffic Sign Recognition
+# Traffic Sign Detection
 
-An end-to-end Computer Vision and Deep Learning pipeline designed to detect and classify traffic signs in real-time. This project demonstrates a complete edge AI workflow, from data preparation and model training to real-time deployment on resource-constrained hardware like the Nvidia Jetson.
+Real-time traffic sign detection pipeline built for NVIDIA Jetson. The system uses HSV-based color segmentation to isolate sign candidates, then classifies them through template matching. A lightweight CNN (`SmallSignNet`) is included for training-based classification as an alternative backend.
 
-## Key Highlights & Skills Demonstrated
+## Overview
 
-* **Deep Learning (PyTorch):** Designed and trained a custom Convolutional Neural Network (`SmallSignNet`) from scratch to classify 10 different traffic sign categories.
-* **Computer Vision (OpenCV):** Implemented a robust Region of Interest (ROI) extraction pipeline using HSV color space thresholding, morphological operations, and contour detection for real-time sign localization.
-* **Edge AI Deployment:** Optimized the inference pipeline to run efficiently on hardware using a live camera feed.
-* **End-to-End Development:** Built the entire stack, including a custom PyTorch Dataset loader, training scripts, and an HSV calibration tool.
+| Stage | Method |
+|---|---|
+| Candidate detection | HSV color segmentation + circularity filter |
+| Classification | Normalized cross-correlation template matching |
+| Alt. classification | Custom CNN (trained with PyTorch) |
 
----
+**Supported sign classes:** STOP, AHEAD, RIGHT\_BLOCK, LEFT\_BLOCK, PARKING, ROUNDABOUT, HIGHWAY\_START, HIGHWAY\_END, PRIORITY\_ROAD, NO\_ENTRY
 
-## Setup
+## Project Structure
 
-To set up the project on your machine, you can follow these steps:
+```
+.
+├── jetson_main.py    # Main detection loop (template matching)
+├── classify.py       # CNN-based classifier
+├── model.py          # SmallSignNet architecture
+├── train.py          # Training script
+├── dataset.py        # PyTorch dataset loader
+├── classes.py        # Shared class list
+├── hsv_picker.py     # Utility for tuning HSV thresholds
+├── templates/        # Reference images per class (for template matching)
+├── dataset/          # Training images per class (for CNN)
+└── traffic_signs.pth # Saved model weights
+```
 
-1. Set up git on your machine if not already configured.
-2. Navigate to the directory you want to set up the project. Open a terminal in that folder and clone the project using git:
-   ```bash
-   git clone [https://github.com/sma234/sign-detection.git](https://github.com/sma234/sign-detection.git)
-3. If you have VS Code installed, you can open the project from the same terminal using the following commands:
-   ```bash
-   cd sign-detection
-   code .
-4. Open the integrated VS Code terminal (via View > Terminal or by using the shortcut `Ctrl+``) and run the following commands to create a virtual environment and install dependencies:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   pip install torch torchvision opencv-python numpy pillow
+## Requirements
 
+```
+opencv-python
+torch
+torchvision
+Pillow
+numpy
+```
 
+Install with:
 
+```bash
+pip install opencv-python torch torchvision Pillow numpy
+```
 
+## Usage
+
+### Run the detector
+
+```bash
+python jetson_main.py
+```
+
+Opens the default camera. Detected signs are drawn with a bounding box and label. Press `q` to quit.
+
+### Train the CNN
+
+Organize training images under `dataset/<CLASS_NAME>/` then run:
+
+```bash
+python train.py
+```
+
+Trains for 15 epochs and saves weights to `traffic_signs.pth`.
+
+### Tune HSV thresholds
+
+```bash
+python hsv_picker.py
+```
+
+Click anywhere on the live frame to print the HSV value at that pixel.
+
+## How It Works
+
+1. **Color segmentation** — Each frame is blurred and converted to HSV. Masks are computed for red (two ranges, since red wraps around 0°), blue, green, and yellow.
+2. **Morphological cleanup** — Opening removes noise; closing fills gaps in the mask.
+3. **Contour filtering** — Contours smaller than 300 px² or with circularity below 0.5 are discarded.
+4. **Template matching** — Each surviving ROI is compared against reference images using `TM_CCOEFF_NORMED`. A match is accepted when the score exceeds 0.4.
+
+## Model Architecture
+
+`SmallSignNet` is a compact CNN designed to run efficiently on edge hardware:
+
+```
+Input (3 × 32 × 32)
+  → Conv2d(3, 16, 3) → ReLU → MaxPool  →  16 × 16
+  → Conv2d(16, 32, 3) → ReLU → MaxPool →   8 × 8
+  → Flatten → Linear(2048, 64) → ReLU
+  → Linear(64, num_classes)
+```
+
+Trained with Adam (lr=1e-3) and cross-entropy loss over 15 epochs.
+
+## Hardware
+
+Developed and tested on an **NVIDIA Jetson** board. Runs on any CUDA-capable GPU or CPU fallback.
